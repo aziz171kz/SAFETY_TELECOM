@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SAFETY TELECOM — электронный журнал инструктажей</title>
+<meta name="description" content="Электронный журнал ежедневных инструктажей по охране труда: подпись на экране, календарь и архив.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f2f1ec;--surface:#fff;--ink:#1c262e;--mute:#5d6a73;--line:#d9d8d0;--accent:#f0b400;--ok:#1f7a4d;--okbg:#e2f1e8;--field:#faf9f5;--bad:#b3261e;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#151b20;--surface:#1e262d;--ink:#eceae3;--mute:#97a3ab;--line:#33404a;--ok:#5fd093;--okbg:#1b3328;--field:#182026;--bad:#ff8a80;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#151b20;--surface:#1e262d;--ink:#eceae3;--mute:#97a3ab;--line:#33404a;--ok:#5fd093;--okbg:#1b3328;--field:#182026;--bad:#ff8a80;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.5 "IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+.stripe{height:10px;background:repeating-linear-gradient(-45deg,var(--accent) 0 14px,#1c262e 14px 28px)}
+main{max-width:820px;margin:0 auto;padding:20px 16px 56px}
+h1{font-size:24px;line-height:1.2;font-weight:700;margin:0}
+h2{font-size:18px;margin:0 0 12px;font-weight:600}
+.sub{color:var(--mute);margin:2px 0 16px;font-size:15px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:16px;margin-bottom:16px}
+.tabs{display:flex;gap:8px;margin-bottom:16px}
+.tabs button{flex:1;font:inherit;font-size:14px;font-weight:600;min-height:48px;padding:0 4px;border:2px solid var(--ink);background:var(--surface);color:var(--ink);border-radius:4px;cursor:pointer}
+.tabs button[aria-pressed=true]{background:var(--accent);color:#1c262e}
+label{display:block;font-size:14px;font-weight:500;margin-bottom:4px}
+input,select{width:100%;font:inherit;color:var(--ink);background:var(--field);border:1px solid var(--line);border-radius:4px;padding:9px 10px;min-height:44px}
+input:focus-visible,select:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-offset:1px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+@media(max-width:560px){.g2,.g3{grid-template-columns:1fr}}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
+@media(max-width:560px){.stats{grid-template-columns:1fr 1fr}}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:12px}
+.stat b{display:block;font-size:30px;line-height:1.1}
+.stat span{font-size:13px;color:var(--mute)}
+.btn{font:inherit;font-weight:600;border:2px solid var(--ink);background:var(--accent);color:#1c262e;border-radius:4px;padding:0 16px;min-height:48px;cursor:pointer}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.ghost{font:inherit;font-size:14px;border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:4px;padding:0 14px;min-height:44px;cursor:pointer}
+.brief{border-left:6px solid var(--accent);padding:4px 0 4px 12px;margin-bottom:16px}
+.brief h3{margin:0 0 2px;font-size:20px}
+.brief p{margin:4px 0}
+.mut{color:var(--mute);font-size:14px}
+canvas{display:block;width:100%;aspect-ratio:8/3;background:#fff;border:2px dashed var(--mute);border-radius:4px;touch-action:none}
+.sigact{display:flex;gap:8px;margin-top:8px}
+.sigact .btn{flex:1}
+.msg{min-height:24px;margin:8px 0 0;font-size:15px}
+.msg.ok{color:var(--ok);font-weight:600}.msg.err{color:var(--bad);font-weight:600}
+.seg{display:flex;border:1px solid var(--line);border-radius:4px;overflow:hidden;margin-bottom:8px;width:max-content;max-width:100%}
+.seg button{border:0;background:transparent;color:var(--ink);font:inherit;font-size:14px;padding:0 12px;min-height:44px;cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--ink);color:var(--bg)}
+ul{list-style:none;margin:0;padding:0}
+li.emp{display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+li.grp{font-weight:600;padding:14px 0 4px}
+li.grp small{color:var(--mute);font-weight:400}
+li.grp:first-child{padding-top:0}
+.nm{font-weight:600}.st{font-size:14px;color:var(--mute)}
+.emp.done .st{color:var(--ok);font-weight:600}
+.emp img{height:40px;width:90px;object-fit:contain;background:#fff;border:1px solid var(--line);border-radius:3px}
+.emp .none{color:var(--mute);font-size:13px}
+.empty{color:var(--mute);padding:12px 0;text-align:center}
+.note{font-size:13px;color:var(--mute);margin:10px 0 0}
+.calhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.calhead h2{margin:0}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal .wd{font-size:12px;color:var(--mute);text-align:center;padding:4px 0}
+.day{min-height:48px;border:1px solid var(--line);background:var(--field);color:var(--ink);border-radius:4px;font:inherit;cursor:pointer;line-height:1.1}
+.day i{display:block;font-size:8px;font-style:normal;height:10px}
+.day.has{background:var(--accent);color:#1c262e;font-weight:700}
+.day.tod{outline:2px solid var(--ink);outline-offset:1px}
+.day.sel{box-shadow:inset 0 0 0 3px var(--ink)}
+.day.blank{visibility:hidden}
+.kind{display:inline-block;background:var(--ink);color:var(--bg);font-size:13px;font-weight:600;padding:2px 8px;border-radius:3px;margin-bottom:6px}
+.pick li{margin:0}
+.pick button{display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%;min-height:48px;border:1px solid var(--line);background:var(--field);color:var(--ink);font:inherit;text-align:left;padding:0 12px;border-radius:4px;margin-bottom:6px;cursor:pointer}
+.pick button small{color:var(--mute);font-size:13px}
+.pick button[aria-pressed=true]{border:2px solid var(--ink);background:var(--accent);color:#1c262e;font-weight:600}
+.pick button[aria-pressed=true] small{color:#1c262e}
+.pick button.signed,.pick button.signed:disabled{background:var(--okbg);color:var(--ok);font-weight:600;cursor:default;opacity:1}
+.btn.okbtn,.btn.okbtn[disabled]{background:var(--ok);color:var(--okbg);border-color:var(--ok);opacity:1}
+.chk{display:inline-block;width:22px;height:22px;line-height:22px;text-align:center;border-radius:50%;background:var(--ok);color:var(--okbg);font-size:14px}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="stripe"></div>
+<main>
+  <h1>SAFETY TELECOM</h1>
+  <p class="sub">Электронный журнал инструктажей по охране труда</p>
+  <button type="button" class="ghost" id="adm" style="margin-bottom:12px">Вход для руководителя</button>
+  <div id="status" class="note" role="status"></div>
+
+  <div class="tabs" id="tabs" hidden>
+    <button type="button" data-t="admin" aria-pressed="true">Панель</button>
+    <button type="button" data-t="arch" aria-pressed="false">Архив</button>
+    <button type="button" data-t="sign" aria-pressed="false">Подписать</button>
+  </div>
+
+  <section id="sign">
+    <div class="panel">
+      <div id="briefBox"></div>
+      <label id="pl" for="ps">Найдите себя в списке</label>
+      <input type="search" id="ps" placeholder="Начните вводить фамилию" autocomplete="off" style="margin-bottom:8px">
+      <ul id="pick" class="pick" aria-labelledby="pl"></ul>
+      <div style="margin:12px 0 4px"><label>Подпись пальцем в рамке</label></div>
+      <canvas id="pad" aria-label="Поле для подписи"></canvas>
+      <div class="sigact">
+        <button type="button" class="ghost" id="clr">Очистить</button>
+        <button type="button" class="btn" id="signBtn">Подписать</button>
+      </div>
+      <p class="msg" id="signMsg" role="status"></p>
+    </div>
+  </section>
+
+  <section id="admin" hidden>
+    <div class="stats">
+      <div class="stat"><b id="sT">0</b><span>Сотрудников</span></div>
+      <div class="stat"><b id="sD">0</b><span>Прошли сегодня</span></div>
+      <div class="stat"><b id="sW">0</b><span>Ожидают</span></div>
+      <div class="stat"><b id="sB">0</b><span>Бригад</span></div>
+    </div>
+    <div class="panel">
+      <h2>Инструктаж на сегодня</h2>
+      <div class="g3">
+        <div><label for="kd">Вид инструктажа</label><select id="kd"></select></div>
+        <div><label for="tp">Тема</label><select id="tp"></select></div>
+        <div><label for="ob">Объект</label><input type="text" id="ob" placeholder="ВОЛС, ул. Абая"></div>
+      </div>
+      <div style="margin:12px 0"><label for="fm">Руководитель бригады</label><input type="text" id="fm" placeholder="ФИО"></div>
+      <button type="button" class="btn" id="saveBrief">Сохранить инструктаж</button>
+      <p class="msg" id="briefMsg" role="status"></p>
+      <p class="note">При сохранении фиксируется текущий состав бригад. Он останется в архиве за этот день.</p>
+    </div>
+    <div class="panel">
+      <h2>Кто прошёл сегодня</h2>
+      <div class="seg" role="group" aria-label="Фильтр">
+        <button type="button" data-f="all" aria-pressed="true">Все</button>
+        <button type="button" data-f="no" aria-pressed="false">Не прошли</button>
+        <button type="button" data-f="yes" aria-pressed="false">Прошли</button>
+      </div>
+      <ul id="list"></ul>
+    </div>
+    <div class="panel">
+      <h2>Добавить сотрудника</h2>
+      <div class="g3">
+        <div><label for="en">ФИО</label><input type="text" id="en"></div>
+        <div><label for="er">Должность</label><input type="text" id="er"></div>
+        <div><label for="eb">Бригада</label><input type="text" id="eb" placeholder="Монтаж №1"></div>
+      </div>
+      <button type="button" class="btn" id="addEmp" style="margin-top:12px">Добавить</button>
+      <p class="msg" id="empMsg" role="status"></p>
+    </div>
+  </section>
+
+  <section id="arch" hidden>
+    <div class="panel">
+      <div class="calhead">
+        <button type="button" class="ghost" id="pm" aria-label="Предыдущий месяц">‹</button>
+        <h2 id="ct"></h2>
+        <button type="button" class="ghost" id="nx" aria-label="Следующий месяц">›</button>
+      </div>
+      <div class="cal" id="cal"></div>
+      <p class="note">Жёлтым отмечены дни с инструктажем. Нажмите на день, чтобы увидеть вид инструктажа и состав бригад.</p>
+    </div>
+    <div class="panel" id="detail"></div>
+  </section>
+
+  <p class="note">Прототип. Данные демонстрационные. Юридическую силу электронной подписи по законодательству Казахстана нужно подтвердить отдельно. Данные хранятся только в этом браузере на этом устройстве. Срок хранения 30 лет эта версия не обеспечивает: для этого нужен собственный сервер с резервным копированием.</p>
+</main>
+
+<script>
+(function(){
+var TOPICS=[
+ {id:"el",t:"Электробезопасность",d:"Работа с электрооборудованием, отключение питания, проверка отсутствия напряжения, защитные средства."},
+ {id:"hi",t:"Работа на высоте",d:"Монтаж кабеля на опорах, использование страховочных систем, лестниц и автовышек."},
+ {id:"fo",t:"Монтаж ВОЛС",d:"Работа с оптическим кабелем, скалывателями, сварочными аппаратами и осколками волокна."},
+ {id:"ug",t:"Подземные коммуникации",d:"Работа в колодцах, проверка газовой среды, ограждение рабочей зоны."},
+ {id:"rd",t:"Работа на автомобильных дорогах",d:"Сигнальные жилеты, ограждение места работ, безопасность движения."},
+ {id:"fa",t:"Первая помощь",d:"Порядок действий при травме, вызов скорой помощи, остановка кровотечения."},
+ {id:"fi",t:"Пожарная безопасность",d:"Пути эвакуации, первичные средства пожаротушения, действия при возгорании."},
+ {id:"pp",t:"Средства индивидуальной защиты",d:"Каска, перчатки, очки, страховочная привязь: проверка перед работой."},
+ {id:"to",t:"Работа с инструментом",d:"Исправность инструмента, безопасные приёмы, хранение и переноска."},
+ {id:"em",t:"Действия при аварийных ситуациях",d:"Остановка работ, оповещение руководителя, эвакуация, сбор у места сбора."}
+];
+var KINDS=["Ежедневный (предсменный)","Первичный на рабочем месте","Повторный","Внеплановый","Целевой"];
+var MONTHS=["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
+var $=function(i){return document.getElementById(i);};
+function pad(n){return String(n).padStart(2,"0");}
+function ds(d){return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());}
+function nowT(){var d=new Date();return pad(d.getHours())+":"+pad(d.getMinutes());}
+function el(tag,cls,txt){var e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e;}
+function say(id,t,k){var e=$(id);e.textContent=t;e.className="msg"+(k?" "+k:"");}
+function longDate(s){var p=s.split("-");return new Date(+p[0],+p[1]-1,+p[2]).toLocaleDateString("ru-RU",{day:"numeric",month:"long",year:"numeric"});}
+
+
+// ---- Local storage layer (static version: data stays in this browser) ----
+var Store=(function(){
+  var KEY="safety-telecom-db-v1",data,subs=[];
+  function load(){data=null;try{data=JSON.parse(localStorage.getItem(KEY));}catch(e){}
+    if(!data||typeof data!=="object")data={};
+    ["employees","briefings","signs"].forEach(function(c){if(!data[c])data[c]={};});}
+  function save(){try{localStorage.setItem(KEY,JSON.stringify(data));return true;}catch(e){return false;}}
+  function notify(){subs.slice().forEach(function(f){f();});}
+  function snap(col,id){var d=data[col][id];return{id:id,exists:!!d,data:function(){return d?JSON.parse(JSON.stringify(d)):undefined;}};}
+  function newId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+  function put(col,id,obj){
+    var prev=data[col][id];data[col][id]=obj;
+    if(!save()){if(prev)data[col][id]=prev;else delete data[col][id];return Promise.reject(new Error("storage_full"));}
+    notify();return Promise.resolve();
+  }
+  function listen(run){subs.push(run);setTimeout(run,0);return function(){subs=subs.filter(function(f){return f!==run;});};}
+  function query(col){
+    var fl=[],ord=null;
+    function docs(){
+      var ids=Object.keys(data[col]).filter(function(id){var d=data[col][id];return fl.every(function(f){var v=d[f[0]];return f[1]==="=="?v===f[2]:f[1]===">="?v>=f[2]:f[1]==="<="?v<=f[2]:true;});});
+      ids.sort(function(a,b){var x=ord?String(data[col][a][ord]||""):a,y=ord?String(data[col][b][ord]||""):b;return x<y?-1:x>y?1:0;});
+      return ids.map(function(id){return snap(col,id);});
+    }
+    var q={
+      where:function(f,op,v){fl.push([f,op,v]);return q;},
+      orderBy:function(f){ord=f;return q;},
+      get:function(){var d=docs();return Promise.resolve({docs:d,size:d.length});},
+      onSnapshot:function(next){return listen(function(){var d=docs();next({docs:d,size:d.length});});}
+    };
+    return q;
+  }
+  load();
+  window.addEventListener("storage",function(e){if(e.key===KEY){load();notify();}});
+  return{
+    collection:function(col){var q=query(col);q.add=function(obj){return put(col,newId(),obj);};return q;},
+    doc:function(path){var p=path.split("/"),col=p[0],id=p[1];return{
+      get:function(){return Promise.resolve(snap(col,id));},
+      set:function(obj){return put(col,id,obj);},
+      onSnapshot:function(next){return listen(function(){next(snap(col,id));});}
+    };},
+    isEmpty:function(){return !Object.keys(data.employees).length&&!Object.keys(data.briefings).length;},
+    seed:function(f){f(data);save();notify();}
+  };
+})();
+
+// PIN для режима руководителя. Это только демонстрационная защита: код виден в браузере.
+var ADMIN_PIN="1234";
+
+function seedDemo(){
+  if(!Store.isEmpty())return;
+  var N=[["e1","Иванов И.И.","Монтажник","Монтаж №1"],["e2","Петров А.А.","Электрик","Аварийная"],["e3","Сидоров В.В.","Монтажник","Монтаж №2"],["e4","Ахметов Д.Н.","Водитель автовышки","Монтаж №1"],["e5","Смирнова О.П.","Кабельщик-спайщик","ВОЛС"]];
+  var now=new Date();
+  function dOf(off){return ds(new Date(now.getFullYear(),now.getMonth(),now.getDate()-off));}
+  function topic(t){return TOPICS.filter(function(x){return x.t===t;})[0];}
+  var B=[
+    {off:0,t:"Работа на высоте",k:KINDS[0],o:"Демонстрационный объект",ids:["e1","e2","e3","e4","e5"],sg:[]},
+    {off:1,t:"Электробезопасность",k:KINDS[0],o:"Узел связи №3",ids:["e1","e2","e5"],sg:[["e1","08:05"],["e2","08:07"]]},
+    {off:2,t:"Действия при аварийных ситуациях",k:KINDS[3],o:"Демонстрационный объект",ids:["e1","e2","e3","e4"],sg:[["e1","14:20"],["e3","14:22"],["e4","14:25"]]},
+    {off:9,t:"Монтаж ВОЛС",k:KINDS[4],o:"Магистраль, участок 2",ids:["e5","e3"],sg:[["e5","09:10"]]}
+  ];
+  Store.seed(function(d){
+    N.forEach(function(n){d.employees[n[0]]={name:n[1],role:n[2],brigade:n[3]};});
+    B.forEach(function(b){
+      var date=dOf(b.off),tp=topic(b.t);
+      d.briefings[date]={date:date,kind:b.k,topic:tp.t,text:tp.d,object:b.o,foreman:"Мастер участка",
+        roster:N.filter(function(n){return b.ids.indexOf(n[0])>=0;}).map(function(n){return{id:n[0],name:n[1],role:n[2],brigade:n[3]};})};
+      b.sg.forEach(function(s){var n=N.filter(function(x){return x[0]===s[0];})[0];
+        d.signs[date+"_"+s[0]]={date:date,emp:s[0],name:n[1],brigade:n[3],kind:b.k,t:s[1],topic:tp.t,uid:"",sig:""};});
+    });
+  });
+}
+
+var db=null,user=null,uid=null,isAdmin=false,canWrite=false;
+var TODAY=ds(new Date()),filter="all";
+var emps=[],brief=null,signs={},selWho="",loadTimer=null,lastOk=null,psq="";
+function matchQ(e){return !psq||(e.name+" "+(e.brigade||"")).toLowerCase().indexOf(psq)>=0;}
+var calY=+TODAY.slice(0,4),calM=+TODAY.slice(5,7)-1,archDate=TODAY,monthB={},archSigns={},unsubM=null,unsubA=null;
+
+TOPICS.forEach(function(x){var o=el("option",null,x.t);o.value=x.id;$("tp").appendChild(o);});
+KINDS.forEach(function(k){var o=el("option",null,k);o.value=k;$("kd").appendChild(o);});
+
+// signature pad
+var cv=$("pad"),cx=cv.getContext("2d"),drawing=false,inked=false;
+cv.width=640;cv.height=240;cx.lineWidth=4;cx.lineCap="round";cx.lineJoin="round";cx.strokeStyle="#1c262e";
+function pt(e){var r=cv.getBoundingClientRect();return{x:(e.clientX-r.left)*cv.width/r.width,y:(e.clientY-r.top)*cv.height/r.height};}
+cv.addEventListener("pointerdown",function(e){drawing=true;cv.setPointerCapture(e.pointerId);var p=pt(e);cx.beginPath();cx.moveTo(p.x,p.y);cx.lineTo(p.x+.1,p.y+.1);cx.stroke();inked=true;e.preventDefault();});
+cv.addEventListener("pointermove",function(e){if(!drawing)return;var p=pt(e);cx.lineTo(p.x,p.y);cx.stroke();});
+["pointerup","pointercancel"].forEach(function(n){cv.addEventListener(n,function(){drawing=false;});});
+function clearPad(){cx.clearRect(0,0,cv.width,cv.height);inked=false;}
+$("clr").addEventListener("click",clearPad);
+$("ps").addEventListener("input",function(){psq=$("ps").value.trim().toLowerCase();var c=emps.filter(function(e){return e.id===selWho;})[0];if(c&&!matchQ(c))selWho="";renderSign();});
+
+function showTab(t){
+  ["sign","admin","arch"].forEach(function(x){$(x).hidden=x!==t;});
+  document.querySelectorAll("#tabs button").forEach(function(b){b.setAttribute("aria-pressed",b.getAttribute("data-t")===t?"true":"false");});
+}
+document.querySelectorAll("#tabs button").forEach(function(b){b.addEventListener("click",function(){showTab(b.getAttribute("data-t"));});});
+
+// grouped list by brigade (used for today's panel and for the archive day)
+function fillGrouped(ul,roster,sg,date,flt){
+  ul.textContent="";
+  var groups={};
+  roster.forEach(function(e){var k=e.brigade||"Без бригады";(groups[k]=groups[k]||[]).push(e);});
+  var keys=Object.keys(groups).sort(),shown=0;
+  keys.forEach(function(k){
+    var rows=groups[k].filter(function(e){var s=!!sg[date+"_"+e.id];return flt==="all"||(flt==="yes"&&s)||(flt==="no"&&!s);});
+    if(!rows.length)return;
+    var done=groups[k].filter(function(e){return sg[date+"_"+e.id];}).length;
+    var h=el("li","grp",k+" ");h.appendChild(el("small",null,"прошли "+done+" из "+groups[k].length));ul.appendChild(h);
+    rows.forEach(function(e){
+      shown++;
+      var s=sg[date+"_"+e.id],li=el("li","emp"+(s?" done":""));
+      var l=el("div"),nm=el("div","nm");if(s){nm.appendChild(el("span","chk","✓"));nm.appendChild(document.createTextNode(" "));}nm.appendChild(document.createTextNode(e.name));l.appendChild(nm);
+      if(e.role)l.appendChild(el("div","mut",e.role));
+      l.appendChild(el("div","st",s?"Прошёл(а) инструктаж в "+s.t:"Не подтвердил(а)"));
+      li.appendChild(l);
+      if(s&&s.sig){var im=el("img");im.src=s.sig;im.alt="Подпись: "+e.name;li.appendChild(im);}
+      else li.appendChild(el("span","none",s?"подпись не сохранена":"нет подписи"));
+      ul.appendChild(li);
+    });
+  });
+  if(!shown)ul.appendChild(el("li","empty",roster.length?"Нет сотрудников по этому фильтру.":"Список пуст."));
+}
+
+function renderSign(){
+  var box=$("briefBox");box.textContent="";
+  if(brief){
+    var d=el("div","brief");
+    if(brief.kind)d.appendChild(el("div","kind",brief.kind));
+    d.appendChild(el("h3",null,brief.topic));
+    d.appendChild(el("p",null,brief.text||""));
+    var m=[];if(brief.object)m.push("Объект: "+brief.object);if(brief.foreman)m.push("Руководитель: "+brief.foreman);
+    if(m.length)d.appendChild(el("p","mut",m.join(". ")));
+    box.appendChild(d);
+  } else box.appendChild(el("p","empty","Инструктаж на сегодня ещё не создан. Обратитесь к руководителю бригады."));
+  var pk=$("pick");pk.textContent="";
+  if(selWho&&!emps.some(function(e){return e.id===selWho&&!signs[TODAY+"_"+e.id];}))selWho="";
+  emps.filter(matchQ).forEach(function(e){
+    var s=signs[TODAY+"_"+e.id],li=el("li"),b=el("button",s?"signed":"");b.type="button";
+    b.appendChild(el("span",null,(s?"✓ ":"")+e.name));
+    b.appendChild(el("small",null,s?"подписано в "+s.t:(e.brigade||"")));
+    b.setAttribute("aria-pressed",e.id===selWho?"true":"false");
+    if(s)b.disabled=true;
+    b.onclick=function(){selWho=e.id;lastOk=null;say("signMsg","");renderSign();};
+    li.appendChild(b);pk.appendChild(li);
+  });
+  if(!emps.length)pk.appendChild(el("li","empty","Список сотрудников пуст."));
+  else if(!emps.some(matchQ))pk.appendChild(el("li","empty","Никого не найдено. Проверьте фамилию."));
+  var btn=$("signBtn");
+  if(lastOk&&!selWho){btn.className="btn okbtn";btn.textContent="✓ Подписано";btn.disabled=true;}
+  else{btn.className="btn";btn.textContent="Подписать";btn.disabled=!(brief&&canWrite&&selWho);}
+  if(db&&!canWrite)say("signMsg","У вас нет права записи. Попросите руководителя выдать доступ.","err");
+}
+
+$("signBtn").addEventListener("click",async function(){
+  if(!db||!brief||!selWho)return;
+  if(!inked){say("signMsg","Поставьте подпись в рамке.","err");return;}
+  var e=emps.filter(function(x){return x.id===selWho;})[0];if(!e)return;
+  $("signBtn").disabled=true;
+  try{
+    var ref=db.doc("signs/"+TODAY+"_"+selWho),ex=await ref.get();
+    if(ex.exists){say("signMsg","Подпись уже есть. Изменить её нельзя.","err");return;}
+    await ref.set({date:TODAY,emp:selWho,name:e.name,brigade:e.brigade||"",kind:brief.kind||"",t:nowT(),topic:brief.topic,uid:uid||"",sig:cv.toDataURL("image/png")});
+    clearPad();lastOk={name:e.name,t:nowT()};selWho="";renderSign();say("signMsg","Подпись принята: "+e.name+". Сотрудник отмечен в журнале.","ok");
+  }catch(err){say("signMsg","Не удалось сохранить подпись. Проверьте связь и повторите.","err");renderSign();}
+});
+
+function renderAdmin(){
+  var done=emps.filter(function(e){return signs[TODAY+"_"+e.id];}).length,br={};
+  emps.forEach(function(e){if(e.brigade)br[e.brigade]=1;});
+  $("sT").textContent=emps.length;$("sD").textContent=done;$("sW").textContent=emps.length-done;$("sB").textContent=Object.keys(br).length;
+  if(brief){
+    var t=TOPICS.filter(function(x){return x.t===brief.topic;})[0];if(t)$("tp").value=t.id;
+    if(brief.kind)$("kd").value=brief.kind;
+    if(document.activeElement!==$("ob"))$("ob").value=brief.object||"";
+    if(document.activeElement!==$("fm"))$("fm").value=brief.foreman||"";
+  }
+  fillGrouped($("list"),emps,signs,TODAY,filter);
+}
+document.querySelectorAll(".seg button").forEach(function(b){b.addEventListener("click",function(){
+  filter=b.getAttribute("data-f");
+  document.querySelectorAll(".seg button").forEach(function(x){x.setAttribute("aria-pressed",x===b?"true":"false");});
+  renderAdmin();});});
+
+$("saveBrief").addEventListener("click",async function(){
+  var t=TOPICS.filter(function(x){return x.id===$("tp").value;})[0];if(!t||!db)return;
+  var roster=emps.map(function(e){return{id:e.id,name:e.name,role:e.role||"",brigade:e.brigade||""};});
+  try{await db.doc("briefings/"+TODAY).set({date:TODAY,kind:$("kd").value,topic:t.t,text:t.d,object:$("ob").value.trim(),foreman:$("fm").value.trim(),roster:roster});say("briefMsg","Инструктаж сохранён. Состав бригад зафиксирован.","ok");}
+  catch(e){say("briefMsg","Не удалось сохранить. Нужны права редактора.","err");}
+});
+$("addEmp").addEventListener("click",async function(){
+  var n=$("en").value.trim();if(!n||!db){$("en").focus();return;}
+  try{await db.collection("employees").add({name:n,role:$("er").value.trim(),brigade:$("eb").value.trim()});
+    $("en").value="";$("er").value="";$("eb").value="";say("empMsg","Сотрудник добавлен. Чтобы он попал в архив дня, сохраните инструктаж ещё раз.","ok");}
+  catch(e){say("empMsg","Не удалось добавить. Нужны права редактора.","err");}
+});
+
+// calendar and archive
+function renderCal(){
+  $("ct").textContent=MONTHS[calM]+" "+calY;
+  var c=$("cal");c.textContent="";
+  ["Пн","Вт","Ср","Чт","Пт","Сб","Вс"].forEach(function(w){c.appendChild(el("div","wd",w));});
+  var off=(new Date(calY,calM,1).getDay()+6)%7,n=new Date(calY,calM+1,0).getDate(),i;
+  for(i=0;i<off;i++)c.appendChild(el("div","day blank"));
+  for(i=1;i<=n;i++){
+    (function(day){
+      var iso=calY+"-"+pad(calM+1)+"-"+pad(day),b=monthB[iso];
+      var btn=el("button","day"+(b?" has":"")+(iso===TODAY?" tod":"")+(iso===archDate?" sel":""));
+      btn.type="button";btn.appendChild(document.createTextNode(day));
+      btn.appendChild(el("i",null,b?"●":""));
+      btn.setAttribute("aria-label",longDate(iso)+(b?": "+(b.kind||"")+", "+b.topic:": инструктажа нет"));
+      btn.onclick=function(){archDate=iso;subscribeArchSigns();renderCal();renderArch();};
+      c.appendChild(btn);
+    })(i);
+  }
+}
+function renderArch(){
+  var box=$("detail");box.textContent="";
+  box.appendChild(el("h2",null,longDate(archDate)));
+  var b=monthB[archDate];
+  if(!b){box.appendChild(el("p","empty","В этот день инструктаж не проводился."));return;}
+  if(b.kind)box.appendChild(el("div","kind","Вид инструктажа: "+b.kind));
+  var h=el("div","brief");h.appendChild(el("h3",null,b.topic));h.appendChild(el("p",null,b.text||""));
+  var m=[];if(b.object)m.push("Объект: "+b.object);if(b.foreman)m.push("Руководитель: "+b.foreman);
+  if(m.length)h.appendChild(el("p","mut",m.join(". ")));box.appendChild(h);
+  var roster=b.roster&&b.roster.length?b.roster:emps;
+  var done=roster.filter(function(e){return archSigns[archDate+"_"+e.id];}).length;
+  box.appendChild(el("p","mut","Состав бригад на этот день. Прошли инструктаж: "+done+" из "+roster.length+"."));
+  var ul=el("ul");box.appendChild(ul);fillGrouped(ul,roster,archSigns,archDate,"all");
+}
+function subscribeMonth(){
+  if(unsubM)unsubM();
+  var a=calY+"-"+pad(calM+1)+"-01",z=calY+"-"+pad(calM+1)+"-"+pad(new Date(calY,calM+1,0).getDate());
+  unsubM=db.collection("briefings").where("date",">=",a).where("date","<=",z).onSnapshot(function(sn){monthB={};sn.docs.forEach(function(d){monthB[d.id]=d.data();});renderCal();renderArch();},function(){$("status").textContent="Нет доступа к архиву.";});
+}
+function subscribeArchSigns(){
+  if(unsubA)unsubA();archSigns={};
+  unsubA=db.collection("signs").where("date","==",archDate).onSnapshot(function(sn){archSigns={};sn.docs.forEach(function(d){archSigns[d.id]=d.data();});renderArch();},function(){});
+}
+$("pm").addEventListener("click",function(){calM--;if(calM<0){calM=11;calY--;}if(db)subscribeMonth();renderCal();});
+$("nx").addEventListener("click",function(){calM++;if(calM>11){calM=0;calY++;}if(db)subscribeMonth();renderCal();});
+
+function setAdmin(on){
+  isAdmin=on;
+  try{sessionStorage.setItem("st-admin",on?"1":"");}catch(e){}
+  $("adm").textContent=on?"Выйти из режима руководителя":"Вход для руководителя";
+  $("tabs").hidden=!on;
+  if(on){showTab("admin");subscribeMonth();subscribeArchSigns();}
+  else{showTab("sign");if(unsubM){unsubM();unsubM=null;}if(unsubA){unsubA();unsubA=null;}}
+}
+$("adm").addEventListener("click",function(){
+  if(isAdmin){setAdmin(false);return;}
+  var p=window.prompt("Введите PIN руководителя");
+  if(p===null)return;
+  if(p===ADMIN_PIN)setAdmin(true);else window.alert("Неверный PIN");
+});
+
+function init(){
+  db=Store;canWrite=true;uid="";
+  seedDemo();
+  db.collection("employees").orderBy("name").onSnapshot(function(sn){emps=sn.docs.map(function(d){var x=d.data();x.id=d.id;return x;});renderSign();renderAdmin();renderArch();});
+  db.doc("briefings/"+TODAY).onSnapshot(function(sn){brief=sn.exists?sn.data():null;renderSign();renderAdmin();});
+  db.collection("signs").where("date","==",TODAY).onSnapshot(function(sn){signs={};sn.docs.forEach(function(d){signs[d.id]=d.data();});renderSign();renderAdmin();});
+  try{if(sessionStorage.getItem("st-admin")==="1")setAdmin(true);}catch(e){}
+}
+renderSign();renderAdmin();renderCal();renderArch();init();
+})();
+</script>
+</body>
+</html>
